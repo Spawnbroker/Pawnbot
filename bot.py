@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 import feedparser
 from replit import db
+from keep_alive import keep_alive
 
 # Load environment variables
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
@@ -199,5 +200,8 @@ async def force_youtube(ctx):
     await check_youtube_videos()
     await ctx.send("YouTube scan complete!")
 
+keep_alive()
+
 # Run the bot
-bot.run(DISCORD_TOKEN)
+if __name__ == "__main__":
+    bot.run(DISCORD_TOKEN)
