@@ -1,22 +1,18 @@
 import discord
 from discord.ext import commands, tasks
 import googleapiclient.discovery
-import json
 from datetime import datetime
 import os
-from dotenv import load_dotenv
 import feedparser
+from replit import db
 
 # Load environment variables
-load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
 YOUTUBE_CHANNEL_ID = os.getenv('YOUTUBE_CHANNEL_ID')
 DISCORD_VIDEO_CHANNEL_ID = int(os.getenv('DISCORD_VIDEO_CHANNEL_ID'))
 DISCORD_SUBSTACK_CHANNEL_ID = int(os.getenv('DISCORD_SUBSTACK_CHANNEL_ID'))
 CHECK_INTERVAL = int(os.getenv('CHECK_INTERVAL', '3600'))  # Default: check every hour
-LAST_VIDEO_FILE = os.getenv('VIDEO_FILE_NAME')
-LAST_ARTICLE_FILE = os.getenv('ARTICLE_FILE_NAME')
 SUBSTACK_URL = os.getenv('SUBSTACK_URL')
 
 # Set up the YouTube API client
@@ -147,42 +143,31 @@ async def check_substack_articles():
         print(f"Error checking Substack articles: {e}")
 
 def load_last_article():
-    """Loads the last posted article URL from a file."""
-    if os.path.exists(LAST_ARTICLE_FILE):
-        with open(LAST_ARTICLE_FILE, "r") as f:
-            data = json.load(f)
-            return data.get("last_article_url")
-    return None
+    #Loads the last posted article URL from Replit's database
+    return db.get("last_article_url")
 
 def delete_article_file():
-    """Deletes the article file"""
-    if os.path.exists(LAST_ARTICLE_FILE):
-        os.remove(LAST_ARTICLE_FILE)
+    # Deletes the article file from Replit's database
+    if "last_article_url" in db:
+        del db["last_article_url"]
     return None
 
 def save_last_article(article_url):
-    """Saves the last posted article URL to a file."""
-    with open(LAST_ARTICLE_FILE, "w") as f:
-        json.dump({"last_article_url": article_url}, f)
+    # Saves the last posted article URL to Replit's database
+    db["last_article_url"] = article_url
 
 def load_last_video():
-    """Loads the last posted video ID from a file."""
-    if os.path.exists(LAST_VIDEO_FILE):
-        with open(LAST_VIDEO_FILE, "r") as f:
-            data = json.load(f)
-            return data.get("last_video_id")
-    return None
-
+    # Loads the last posted video ID from Replit's database
+    return db.get("last_video_id")
 
 def save_last_video(video_id):
-    """Saves the last posted video ID to a file."""
-    with open(LAST_VIDEO_FILE, "w") as f:
-        json.dump({"last_video_id": video_id}, f)
+    # Saves the last posted video ID to Replit's database
+    db["last_video_id"] = video_id
 
 def delete_video_file():
-    """Deletes the video file"""
-    if os.path.exists(LAST_VIDEO_FILE):
-        os.remove(LAST_VIDEO_FILE)
+    # Deletes the video file from Replit's database
+    if "last_video_id" in db:
+        del db["last_video_id"]
     return None
 
 @bot.command(name='forcescan')
